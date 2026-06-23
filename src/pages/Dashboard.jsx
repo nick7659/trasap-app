@@ -30,7 +30,7 @@ const STATUS_LABEL = {
 }
 
 const COLS = [
-  { key: 'revision_date', label: 'วันที่แก้ไข' },
+  { key: 'revision_date', label: 'วันที่สร้าง' },
   { key: 'doc_type',      label: 'ประเภทเอกสาร' },
   { key: 'doc_no',        label: 'หมายเลขเอกสาร' },
   { key: 'title',         label: 'ชื่อเรื่อง/ชิ้นส่วน' },
