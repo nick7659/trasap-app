@@ -1,14 +1,6 @@
-﻿import { useState } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
-
-const DOC_TYPES = [
-  'Work Procedure (WP)',
-  'Work Instraction (WI)',
-  'Support Documents (SP)',
-  'Form (FM)',
-  'อื่นๆ',
-]
 
 function todayISO() {
   const d = new Date()
@@ -17,6 +9,14 @@ function todayISO() {
 
 export default function CreateDoc({ session }) {
   const navigate = useNavigate()
+
+  // ดึงประเภทเอกสารจากฐานข้อมูล
+  const [docTypes, setDocTypes] = useState([])
+  useEffect(() => {
+    supabase.from('document_types')
+      .select('name').order('sort_order', { ascending: true })
+      .then(({ data }) => setDocTypes((data || []).map(d => d.name)))
+  }, [])
 
   // ฟิลด์แบบฟอร์ม
   const [docType,      setDocType]      = useState('')
@@ -113,7 +113,7 @@ export default function CreateDoc({ session }) {
             <label>ประเภทเอกสาร <span style={{color:'#B33A3A'}}>*</span></label>
             <select value={docType} onChange={e => setDocType(e.target.value)}>
               <option value="">-- เลือกประเภทเอกสาร --</option>
-              {DOC_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              {docTypes.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
 
@@ -135,12 +135,12 @@ export default function CreateDoc({ session }) {
           <div className="field-row">
             <div className="field">
               <label>หมายเลขชิ้นงาน</label>
-              <input placeholder="เช่น PN-0021"
+              <input placeholder="เช่น 511324JJ4A"
                 value={partNo} onChange={e => setPartNo(e.target.value)} />
             </div>
             <div className="field">
               <label>ลูกค้า</label>
-              <input placeholder="เช่น AHP"
+              <input placeholder="เช่น AHP, OTC"
                 value={customer} onChange={e => setCustomer(e.target.value)} />
             </div>
           </div>
@@ -171,10 +171,10 @@ export default function CreateDoc({ session }) {
 
           {/* รายชื่อผู้รับ */}
           <div className="field">
-            <label>รายชื่อผู้ต้องรับทราบ (ไม่บังคับ)</label>
+            <label>ชื่อหรือแผนกที่ต้องเซ็นรับเอกสาร</label>
             <div style={{display:'flex', gap:'8px'}}>
               <input
-                placeholder="พิมพ์ชื่อแล้วกด + เพิ่ม"
+                placeholder="พิมพ์ชื่อหรือแผนกแล้วกด + เพิ่ม"
                 value={recipientInput}
                 onChange={e => setRecipientInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addRecipient()}
@@ -183,10 +183,7 @@ export default function CreateDoc({ session }) {
               <button className="btn-secondary" onClick={addRecipient}
                 style={{padding:'0 16px', flexShrink:0}}>+ เพิ่ม</button>
             </div>
-            <p className="field-hint">
-              ถ้าไม่ใส่ชื่อ → ลิงก์เปิดให้ใครก็เซ็นได้ (โหมดเปิด)
-            </p>
-
+            
             {/* แสดง chip ชื่อที่เพิ่มแล้ว */}
             {recipients.length > 0 && (
               <div style={{display:'flex', flexWrap:'wrap', gap:'6px', marginTop:'10px'}}>
@@ -210,7 +207,7 @@ export default function CreateDoc({ session }) {
           <div style={{display:'flex', justifyContent:'flex-end', gap:'10px', marginTop:'22px'}}>
             <button className="btn-secondary" onClick={() => navigate('/dashboard')}>ยกเลิก</button>
             <button className="btn-primary" onClick={handleSubmit} disabled={loading}>
-              {loading ? 'กำลังสร้าง...' : 'สร้างเรื่องและสร้างลิงก์'}
+              {loading ? 'กำลังสร้าง...' : 'สร้าง Link รายการ'}
             </button>
           </div>
         </div>
