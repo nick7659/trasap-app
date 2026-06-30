@@ -1,5 +1,6 @@
 ﻿import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import * as XLSX from 'xlsx'
 import { supabase } from '../supabase'
 import DocTypeManager from '../components/DocTypeManager'
 
@@ -22,19 +23,24 @@ function fmtDateTime(d) {
   if (!d) return '—'
   return new Date(d).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })
 }
+function fmtRev(n) {
+  if (n === null || n === undefined || n === '') return '—'
+  return String(n).padStart(2, '0')
+}
 
 const STATUS_LABEL = {
-  pending:   { label: 'รอเซันรับ',      bg: '#fef3cd', color: '#856404' },
+  pending:   { label: 'รอเซ็นรับ',      bg: '#fef3cd', color: '#856404' },
   partial:   { label: 'รับแล้วบางส่วน',         bg: '#cfe2ff', color: '#084298' },
-  completed: { label: 'ครบแล้ว',         bg: '#d1e7dd', color: '#0f5132' },
+  completed: { label: 'รับครบแล้ว',         bg: '#d1e7dd', color: '#0f5132' },
 }
 
 const COLS = [
-  { key: 'revision_date', label: 'วันที่สร้าง' },
-  { key: 'doc_type',      label: 'ประเภทเอกสาร' },
-  { key: 'doc_no',        label: 'หมายเลขเอกสาร' },
-  { key: 'title',         label: 'ชื่อเรื่อง/ชิ้นส่วน' },
-  { key: 'revision_no',   label: 'แก้ไขครั้งที่' },
+  { key: 'revision_date', label: 'Create Date' },
+  { key: 'doc_type',      label: 'Document Type' },
+  { key: 'doc_no',        label: 'Document No.' },
+  { key: 'dar_no',        label: 'DAR No.' },
+  { key: 'title',         label: 'Document Title' },
+  { key: 'revision_no',   label: 'Rev. No.' },
   { key: 'eff_date',      label: 'Eff. Date' },
 ]
 
@@ -122,8 +128,8 @@ export default function Dashboard({ session }) {
 
   const handleCopyLink = (url) => {
     navigator.clipboard.writeText(url)
-      .then(() => showToast('Copy Link เรียบร้อยแล้ว'))
-      .catch(() => showToast('ไม่สามารถ Copy Link ได้', 'error'))
+      .then(() => showToast('Copy Link แล้ว'))
+      .catch(() => showToast('ไม่สามารถ Copy ได้', 'error'))
   }
 
   const handleViewAcks = async (doc) => {
@@ -153,7 +159,48 @@ export default function Dashboard({ session }) {
     setDeleteConfirm(null); setDeleting(false)
   }
 
-  // styles
+  const handleExportExcel = () => {
+    if (filtered.length === 0) { showToast('ไม่มีข้อมูลให้ export', 'error'); return }
+
+    const rows = filtered.map((doc, i) => {
+      const recpCount = doc.document_recipients?.length || 0
+      const ackCount  = doc.acknowledgments?.length    || 0
+      const recipientNames = (doc.document_recipients || []).map(r => r.name).join(', ')
+      const status = STATUS_LABEL[doc.status] || STATUS_LABEL.pending
+      const pubUrl = `${window.location.origin}/ack/${doc.access_token}`
+
+      return {
+        '#':                  i + 1,
+        'วันที่แก้ไข':         fmtDate(doc.revision_date),
+        'ประเภทเอกสาร':        doc.doc_type || '',
+        'หมายเลขเอกสาร':       doc.doc_no || '',
+        'DAR No.':            doc.dar_no || '',
+        'ชื่อเรื่อง/ชิ้นส่วน':   doc.title || '',
+        'แก้ไขครั้งที่':        fmtRev(doc.revision_no),
+        'Eff. Date':          fmtDate(doc.eff_date),
+        'รายละเอียดเพิ่มเติม':  doc.description || '',
+        'รายชื่อผู้ต้องรับทราบ': recpCount > 0 ? `${recipientNames} (${ackCount}/${recpCount})` : `โหมดเปิด (${ackCount} คน)`,
+        'สถานะ':              status.label,
+        'ลิงก์':               pubUrl,
+      }
+    })
+
+    const ws = XLSX.utils.json_to_sheet(rows)
+    // ปรับความกว้างคอลัมน์ให้อ่านง่าย
+    ws['!cols'] = [
+      { wch: 4 }, { wch: 12 }, { wch: 22 }, { wch: 16 }, { wch: 16 },
+      { wch: 30 }, { wch: 10 }, { wch: 12 }, { wch: 30 }, { wch: 30 },
+      { wch: 12 }, { wch: 40 },
+    ]
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'เอกสาร')
+
+    const today = new Date().toISOString().slice(0, 10)
+    XLSX.writeFile(wb, `trasap-export-${today}.xlsx`)
+    showToast('Export Excel เรียบร้อยแล้ว')
+  }
+
+
   const th = {
     padding: '10px 12px', textAlign: 'left', fontSize: '.78rem',
     fontWeight: '700', color: '#2E4368', background: '#eae6d8',
@@ -195,10 +242,16 @@ export default function Dashboard({ session }) {
             <h2>รายการที่สร้างไว้</h2>
             <p>รายการเอกสารทั้งหมด {filtered.length}/{docs.length} รายการ</p>
           </div>
-          <div style={{ display:'flex', gap:'10px' }}>
-            <button className="btn-info" onClick={() => setShowDocTypes(true)}
+          <div style={{ display:'flex', gap:'10px', flexWrap:'wrap' }}>
+            <button className="btn-info"
+              onClick={handleExportExcel}
               style={{ fontSize:'.88rem' }}>
-              ⚙ เพิ่มประเภทเอกสาร
+              📊 Export Excel Files
+            </button>
+            <button className="btn-info"
+              onClick={() => setShowDocTypes(true)}
+              style={{ fontSize:'.88rem' }}>
+              ⚙️ เพิ่มประเภทเอกสาร
             </button>
             <button className="btn-primary" onClick={() => navigate('/create')}>
               + สร้าง Link รับเอกสาร
@@ -212,7 +265,7 @@ export default function Dashboard({ session }) {
           marginBottom:'16px', alignItems:'center'
         }}>
           <input
-            placeholder="🔍 ค้นหา ประเภทเอกสาร, ชื่อเอกสาร, หมายเลขเอกสาร, ลูกค้า, ผู้รับ..."
+            placeholder="🔍 ค้นหา Document Tirle , Rev."
             value={search} onChange={e => setSearch(e.target.value)}
             style={{
               flex:'1', minWidth:'220px', padding:'9px 13px',
@@ -236,9 +289,10 @@ export default function Dashboard({ session }) {
               background:'#fff', color:'#1B2A4A', minWidth:'150px'
             }}>
             <option value="">ทุกสถานะ</option>
+            <option value="">ทุกสถานะ</option>
             <option value="pending">รอเซ็นรับ</option>
             <option value="partial">รับแล้วบางส่วน</option>
-            <option value="completed">ครบแล้ว</option>
+            <option value="completed">รับครบแล้ว</option>
           </select>
           {(search || filterType || filterStatus) && (
             <button onClick={() => { setSearch(''); setFilterType(''); setFilterStatus('') }}
@@ -279,10 +333,10 @@ export default function Dashboard({ session }) {
                       {c.label}<SortIcon col={c.key} />
                     </th>
                   ))}
-                  <th style={{...th, cursor:'default'}}>รายละเอียด</th>
-                  <th style={{...th, cursor:'default'}}>ผู้ต้องรับทราบ</th>
-                  <th style={{...th, cursor:'default', textAlign:'center'}}>สถานะ</th>
-                  <th style={{...th, cursor:'default', textAlign:'center'}}>การดำเนินการ</th>
+                  <th style={{...th, cursor:'default'}}>More details</th>
+                  <th style={{...th, cursor:'default'}}>ผู้รับ</th>
+                  <th style={{...th, cursor:'default', textAlign:'center'}}>Status</th>
+                  <th style={{...th, cursor:'default', textAlign:'center'}}>Management</th>
                 </tr>
               </thead>
               <tbody>
@@ -309,12 +363,13 @@ export default function Dashboard({ session }) {
                         }}>{doc.doc_type}</span>
                       </td>
                       <td style={{...td, fontWeight:'600', whiteSpace:'nowrap'}}>{doc.doc_no}</td>
+                      <td style={{...td, whiteSpace:'nowrap'}}>{doc.dar_no || '—'}</td>
                       <td style={{...td, maxWidth:'220px'}}>
                         <div style={{fontWeight:'600', lineHeight:'1.35'}}>{doc.title}</div>
                         {doc.part_no  && <div style={{fontSize:'.74rem', color:'#888'}}>PN: {doc.part_no}</div>}
                         {doc.customer && <div style={{fontSize:'.74rem', color:'#888'}}>{doc.customer}</div>}
                       </td>
-                      <td style={{...td, textAlign:'center'}}>{doc.revision_no}</td>
+                      <td style={{...td, textAlign:'center'}}>{fmtRev(doc.revision_no)}</td>
                       <td style={{...td, whiteSpace:'nowrap'}}>{fmtDate(doc.eff_date)}</td>
                       <td style={{...td, maxWidth:'180px'}}>
                         {doc.description
@@ -352,15 +407,15 @@ export default function Dashboard({ session }) {
                         <button style={actionBtn} title="คัดลอกลิงก์"
                           onClick={() => handleCopyLink(pubUrl)}>🔗 Copy Link</button>
                         <button style={actionBtn} title="เปิดหน้าผู้รับ"
-                          onClick={() => window.open(pubUrl, '_blank')}>👁 เปิดหน้าผู้เซ็นรับ</button>
+                          onClick={() => window.open(pubUrl, '_blank')}>👁 View</button>
                         {ackCount > 0 && (
                           <button style={actionBtn} title="ดูลายเซ็น"
-                            onClick={() => handleViewAcks(doc)}>✍️ เซ็น ({ackCount})</button>
+                            onClick={() => handleViewAcks(doc)}>✍️ เซ็นรับแล้ว ({ackCount})</button>
                         )}
                         <button
                           style={{...actionBtn, color:'#B33A3A', borderColor:'#f5c6c6', marginRight:0}}
                           title="ลบรายการ"
-                          onClick={() => setDeleteConfirm(doc)}>🗑 ลบ</button>
+                          onClick={() => setDeleteConfirm(doc)}>🗑 Delete</button>
                       </td>
                     </tr>
                   )
@@ -376,15 +431,15 @@ export default function Dashboard({ session }) {
         <div className="modal-overlay" onClick={() => setAckModal(null)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}
             style={{maxWidth:'520px', maxHeight:'85vh', overflowY:'auto'}}>
-            <h3>รายละเอียดการรับทราบ</h3>
+            <h3>รายละเอียดการผู้เซ็นรับ</h3>
             <p style={{fontSize:'.85rem', color:'#5C6470', marginBottom:'16px'}}>
-              เรื่อง: <strong>{ackModal.title}</strong>
+              Document Type : <strong>{ackModal.title}</strong>
             </p>
 
             {ackModal.document_recipients?.length > 0 && (
               <div style={{marginBottom:'16px'}}>
                 <p style={{fontSize:'.8rem', fontWeight:'700', color:'#2E4368', marginBottom:'8px'}}>
-                  รายชื่อที่กำหนดไว้
+                  ชื่อหรือแผนกที่กำหนดไว้
                 </p>
                 {ackModal.document_recipients.map(r => {
                   const signed = ackModal.acknowledgments?.find(a => a.recipient_id === r.id)
@@ -399,7 +454,7 @@ export default function Dashboard({ session }) {
                         ? <span style={{color:'#3C5E4A', fontWeight:'600', fontSize:'.78rem'}}>
                             ✓ {fmtDateTime(signed.signed_at)}
                           </span>
-                        : <span style={{color:'#856404', fontSize:'.78rem'}}>⏳ รอเซ็นรับ</span>
+                        : <span style={{color:'#856404', fontSize:'.78rem'}}>⏳ รอรับทราบ</span>
                       }
                     </div>
                   )

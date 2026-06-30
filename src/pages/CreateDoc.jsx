@@ -21,6 +21,7 @@ export default function CreateDoc({ session }) {
   // ฟิลด์แบบฟอร์ม
   const [docType,      setDocType]      = useState('')
   const [docNo,        setDocNo]        = useState('')
+  const [darNo,        setDarNo]        = useState('')
   const [title,        setTitle]        = useState('')
   const [partNo,       setPartNo]       = useState('')
   const [customer,     setCustomer]     = useState('')
@@ -61,6 +62,7 @@ export default function CreateDoc({ session }) {
         sender_id:    session.user.id,
         doc_type:     docType,
         doc_no:       docNo,
+        dar_no:       darNo || null,
         title,
         part_no:      partNo  || null,
         customer:     customer || null,
@@ -94,10 +96,10 @@ export default function CreateDoc({ session }) {
       {/* Topbar */}
       <div className="topbar">
         <div className="brand">
-          <div className="brand-mark">ต</div>
-          <div className="brand-name">ตราทราบ</div>
+          <div className="brand-mark">DD</div>
+          <div className="brand-name">Document Distribution System</div>
         </div>
-        <button className="btn-ghost" onClick={() => navigate('/dashboard')}>← กลับ</button>
+        <button className="btn-ghost" onClick={() => navigate('/dashboard')}>← Back</button>
       </div>
 
       <div className="page">
@@ -110,7 +112,7 @@ export default function CreateDoc({ session }) {
 
           {/* ประเภทเอกสาร */}
           <div className="field">
-            <label>ประเภทเอกสาร <span style={{color:'#B33A3A'}}>*</span></label>
+            <label>Document Type <span style={{color:'#B33A3A'}}>*</span></label>
             <select value={docType} onChange={e => setDocType(e.target.value)}>
               <option value="">-- เลือกประเภทเอกสาร --</option>
               {docTypes.map(t => <option key={t} value={t}>{t}</option>)}
@@ -119,28 +121,35 @@ export default function CreateDoc({ session }) {
 
           {/* หมายเลขเอกสาร */}
           <div className="field">
-            <label>หมายเลขเอกสาร <span style={{color:'#B33A3A'}}>*</span></label>
+            <label>Document No. <span style={{color:'#B33A3A'}}>*</span></label>
             <input placeholder="เช่น WI-xx-xxx"
               value={docNo} onChange={e => setDocNo(e.target.value)} />
           </div>
 
+          {/* DAR No. */}
+          <div className="field">
+            <label>DAR No.</label>
+            <input placeholder="เช่น DAR yy/xxx"
+              value={darNo} onChange={e => setDarNo(e.target.value)} />
+          </div>
+
           {/* ชื่อเรื่อง/ชิ้นส่วน */}
           <div className="field">
-            <label>ชื่อเรื่อง / ชิ้นส่วน <span style={{color:'#B33A3A'}}>*</span></label>
-            <input placeholder="เช่น การตรวจสอบชิ้นงาน"
+            <label>Document Title <span style={{color:'#B33A3A'}}>*</span></label>
+            <input placeholder="เช่น ขั้นตอนการตรวจสอบ"
               value={title} onChange={e => setTitle(e.target.value)} />
           </div>
 
           {/* หมายเลขชิ้นงาน + ลูกค้า */}
           <div className="field-row">
             <div className="field">
-              <label>หมายเลขชิ้นงาน</label>
-              <input placeholder="เช่น 511324JJ4A"
+              <label>Part No.</label>
+              <input placeholder="เช่น Part 001"
                 value={partNo} onChange={e => setPartNo(e.target.value)} />
             </div>
             <div className="field">
-              <label>ลูกค้า</label>
-              <input placeholder="เช่น AHP, OTC"
+              <label>Customer</label>
+              <input placeholder="เช่น OTC , AHP"
                 value={customer} onChange={e => setCustomer(e.target.value)} />
             </div>
           </div>
@@ -148,7 +157,7 @@ export default function CreateDoc({ session }) {
           {/* แก้ไขครั้งที่ + Eff. Date */}
           <div className="field-row">
             <div className="field">
-              <label>แก้ไขครั้งที่ <span style={{color:'#B33A3A'}}>*</span></label>
+              <label>Rev. No.<span style={{color:'#B33A3A'}}>*</span></label>
               <input type="number" min="0" placeholder="0"
                 value={revisionNo} onChange={e => setRevisionNo(e.target.value)} />
             </div>
@@ -159,13 +168,13 @@ export default function CreateDoc({ session }) {
             </div>
           </div>
           <p className="field-hint" style={{marginTop:'-8px', marginBottom:'16px'}}>
-            วันที่แก้ไขจะบันทึกเป็นวันที่สร้างเรื่องนี้โดยอัตโนมัติ
+            
           </p>
 
           {/* รายละเอียด */}
           <div className="field">
-            <label>รายละเอียดเพิ่มเติม</label>
-            <textarea placeholder="หมายเหตุหรือรายละเอียดสำหรับผู้รับ"
+            <label>More Detail</label>
+            <textarea placeholder="หมายเหตุหรือรายละเอียดเพิ่มเติม"
               value={description} onChange={e => setDescription(e.target.value)} />
           </div>
 
@@ -174,7 +183,7 @@ export default function CreateDoc({ session }) {
             <label>ชื่อหรือแผนกที่ต้องเซ็นรับเอกสาร</label>
             <div style={{display:'flex', gap:'8px'}}>
               <input
-                placeholder="พิมพ์ชื่อหรือแผนกแล้วกด + เพิ่ม"
+                placeholder="พิมพ์ชื่อและแผนกแล้วกด + เพิ่ม เช่น อดิศร PD"
                 value={recipientInput}
                 onChange={e => setRecipientInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addRecipient()}
@@ -183,7 +192,9 @@ export default function CreateDoc({ session }) {
               <button className="btn-secondary" onClick={addRecipient}
                 style={{padding:'0 16px', flexShrink:0}}>+ เพิ่ม</button>
             </div>
-            
+            <p className="field-hint">
+            </p>
+
             {/* แสดง chip ชื่อที่เพิ่มแล้ว */}
             {recipients.length > 0 && (
               <div style={{display:'flex', flexWrap:'wrap', gap:'6px', marginTop:'10px'}}>

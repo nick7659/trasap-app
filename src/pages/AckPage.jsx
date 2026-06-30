@@ -12,6 +12,10 @@ function fmtDate(d) {
     day:'numeric', month:'long', year:'numeric'
   })
 }
+function fmtRev(n) {
+  if (n === null || n === undefined || n === '') return '—'
+  return String(n).padStart(2, '0')
+}
 
 export default function AckPage() {
   const { token } = useParams()
@@ -184,12 +188,13 @@ export default function AckPage() {
           borderRadius:'8px', padding:'14px 16px', marginBottom:'16px'
         }}>
           {[
-            ['เลขที่เอกสาร', doc.doc_no],
-            ['ประเภทเอกสาร', doc.doc_type],
-            ['ลูกค้า', doc.customer || '—'],
-            ['หมายเลขชิ้นงาน', doc.part_no || '—'],
-            ['แก้ไขครั้งที่', String(doc.revision_no)],
-            ['วันที่แก้ไข', fmtDate(doc.revision_date)],
+            ['Document No.', doc.doc_no],
+            ['DAR No.', doc.dar_no || 'N/A'],
+            ['Document Type', doc.doc_type],
+            ['Customer', doc.customer || 'N/A'],
+            ['Part No.', doc.part_no || 'N/A'],
+            ['Rev.', fmtRev(doc.revision_no)],
+            ['Create Date', fmtDate(doc.revision_date)],
             ['Eff. Date', fmtDate(doc.eff_date)],
           ].map(([lbl, val]) => (
             <div key={lbl} style={{fontSize:'.83rem'}}>
@@ -238,7 +243,7 @@ export default function AckPage() {
                 <option value="">-- เลือกชื่อ --</option>
                 {doc.recipients?.map(r => (
                   <option key={r.id} value={r.id}>
-                    {r.name} {r.signed ? '(รับแล้ว)' : ''}
+                    {r.name} {r.signed ? '(รับทราบแล้ว)' : ''}
                   </option>
                 ))}
               </select>
@@ -294,7 +299,7 @@ export default function AckPage() {
                 fontSize:'.88rem', color:'#2E4368', marginBottom:'16px',
                 display:'flex', justifyContent:'space-between', alignItems:'center'
               }}>
-                <span>ผู้รับทราบ: <strong>{lockedRecipient.name}</strong></span>
+                <span>ผู้เซ็นรับ: <strong>{lockedRecipient.name}</strong></span>
                 <button className="btn-secondary" style={{fontSize:'.78rem', padding:'4px 10px'}}
                   onClick={() => { setStep('select'); setLockedRecipient(null); setSignerName('') }}>
                   เปลี่ยนชื่อ
@@ -343,7 +348,7 @@ export default function AckPage() {
 
             <div style={{display:'flex', justifyContent:'flex-end', marginTop:'20px'}}>
               <button className="btn-primary" onClick={handleSubmit} disabled={submitting}>
-                {submitting ? 'กำลังบันทึก...' : 'ยืนยันรับทราบ'}
+                {submitting ? 'กำลังบันทึก...' : 'ยืนยันการรับ'}
               </button>
             </div>
           </div>
@@ -360,7 +365,7 @@ export default function AckPage() {
                 fontWeight:'700', fontSize:'1.1rem',
                 padding:'8px 20px', borderRadius:'6px',
                 transform:'rotate(-8deg)', letterSpacing:'.05em'
-              }}>รับแล้ว</div>
+              }}>รับทราบแล้ว</div>
             </div>
 
             <div style={{
