@@ -34,14 +34,14 @@ const STATUS_LABEL = {
 }
 
 const COLS = [
-  { key: 'revision_date', label: 'Create Date' },
+  //{ key: 'revision_date', label: 'Create Date' },   
+  { key: 'dar_no',        label: 'DAR No.' },
   { key: 'doc_type',      label: 'Document Type' },
   { key: 'doc_no',        label: 'Document No.' },
-  { key: 'dar_no',        label: 'DAR No.' },
-  { key: 'models',        label: 'Models' },
   { key: 'title',         label: 'Document Title' },
   { key: 'revision_no',   label: 'Rev. No.' },
   { key: 'eff_date',      label: 'Eff. Date' },
+  //{ key: 'models',        label: 'Models' },
 ]
 
 export default function Dashboard({ session }) {
