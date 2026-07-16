@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import * as XLSX from 'xlsx'
+import * as CSV from 'csv'
 import { supabase } from '../supabase'
 import DocTypeManager from '../components/DocTypeManager'
 
@@ -199,18 +199,18 @@ export default function Dashboard({ session }) {
       }
     })
 
-    const ws = XLSX.utils.json_to_sheet(rows)
+    const ws = CSV.utils.json_to_sheet(rows)
     // ปรับความกว้างคอลัมน์ให้อ่านง่าย
     ws['!cols'] = [
       { wch: 4 }, { wch: 12 }, { wch: 22 }, { wch: 16 }, { wch: 16 },
       { wch: 20 }, { wch: 30 }, { wch: 10 }, { wch: 12 }, { wch: 30 },
       { wch: 30 }, { wch: 12 }, { wch: 40 },
     ]
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'เอกสาร')
+    const wb = CSV.utils.book_new()
+    CSV.utils.book_append_sheet(wb, ws, 'เอกสาร')
 
     const today = new Date().toISOString().slice(0, 10)
-    XLSX.writeFile(wb, `trasap-export-${today}.xlsx`)
+    CSV.writeFile(wb, `trasap-export-${today}.csv`)
     showToast('Export Excel เรียบร้อยแล้ว')
   }
 
