@@ -352,6 +352,7 @@ export default function Dashboard({ session }) {
                   <th style={{...th, cursor:'default', textAlign:'center'}}>Management</th>
                 </tr>
               </thead>
+              </table>
               <tbody>
                 {paginated.map((doc, i) => {
                   const recpCount = doc.document_recipients?.length || 0
