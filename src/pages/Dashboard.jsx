@@ -269,12 +269,12 @@ export default function Dashboard({ session }) {
             <p>รายการเอกสารทั้งหมด {filtered.length}/{docs.length} รายการ</p>
           </div>
           <div style={{ display:'flex', gap:'10px', flexWrap:'wrap' }}>
-            <button className="btn-secondary"
+            <button className="btn-info"
               onClick={handleExportExcel}
               style={{ fontSize:'.88rem' }}>
               📊 Export Excel
             </button>
-            <button className="btn-secondary"
+            <button className="btn-info"
               onClick={() => setShowDocTypes(true)}
               style={{ fontSize:'.88rem' }}>
               ⚙️ ประเภทเอกสาร
