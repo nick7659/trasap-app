@@ -1,6 +1,5 @@
 ﻿import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import * as CSV from 'csv'
 import { supabase } from '../supabase'
 import DocTypeManager from '../components/DocTypeManager'
 
@@ -175,43 +174,56 @@ export default function Dashboard({ session }) {
   const handleExportExcel = () => {
     if (filtered.length === 0) { showToast('ไม่มีข้อมูลให้ export', 'error'); return }
 
-    const rows = filtered.map((doc, i) => {
-      const recpCount = doc.document_recipients?.length || 0
-      const ackCount  = doc.acknowledgments?.length    || 0
-      const recipientNames = (doc.document_recipients || []).map(r => r.name).join(', ')
-      const status = STATUS_LABEL[doc.status] || STATUS_LABEL.pending
-      const pubUrl = `${window.location.origin}/ack/${doc.access_token}`
+    // สร้าง CSV (Excel เปิดได้โดยตรง ไม่ต้อง library เพิ่ม)
+    const headers = [
+      '#', 'วันที่แก้ไข', 'ประเภทเอกสาร', 'หมายเลขเอกสาร', 'DAR No.', 'Models',
+      'ชื่อเรื่อง/ชิ้นส่วน', 'แก้ไขครั้งที่', 'Eff. Date', 'รายละเอียดเพิ่มเติม',
+      'รายชื่อผู้ต้องรับทราบ', 'สถานะ', 'ลิงก์'
+    ]
 
-      return {
-        '#':                  i + 1,
-        'วันที่แก้ไข':         fmtDate(doc.revision_date),
-        'ประเภทเอกสาร':        doc.doc_type || '',
-        'หมายเลขเอกสาร':       doc.doc_no || '',
-        'DAR No.':            doc.dar_no || '',
-        'Models':             doc.models || '',
-        'ชื่อเรื่อง/ชิ้นส่วน':   doc.title || '',
-        'แก้ไขครั้งที่':        fmtRev(doc.revision_no),
-        'Eff. Date':          fmtDate(doc.eff_date),
-        'รายละเอียดเพิ่มเติม':  doc.description || '',
-        'รายชื่อผู้ต้องรับทราบ': recpCount > 0 ? `${recipientNames} (${ackCount}/${recpCount})` : `โหมดเปิด (${ackCount} คน)`,
-        'สถานะ':              status.label,
-        'ลิงก์':               pubUrl,
-      }
+    const escCSV = (v) => {
+      const s = String(v ?? '')
+      return s.includes(',') || s.includes('"') || s.includes('\n')
+        ? `"${s.replace(/"/g, '""')}"` : s
+    }
+
+    const rows = filtered.map((doc, i) => {
+      const recpCount      = doc.document_recipients?.length || 0
+      const ackCount       = doc.acknowledgments?.length    || 0
+      const recipientNames = (doc.document_recipients || []).map(r => r.name).join(', ')
+      const status         = STATUS_LABEL[doc.status] || STATUS_LABEL.pending
+      const pubUrl         = `${window.location.origin}/ack/${doc.access_token}`
+
+      return [
+        i + 1,
+        fmtDate(doc.revision_date),
+        doc.doc_type    || '',
+        doc.doc_no      || '',
+        doc.dar_no      || '',
+        doc.models      || '',
+        doc.title       || '',
+        fmtRev(doc.revision_no),
+        fmtDate(doc.eff_date),
+        doc.description || '',
+        recpCount > 0
+          ? `${recipientNames} (${ackCount}/${recpCount})`
+          : `โหมดเปิด (${ackCount} คน)`,
+        status.label,
+        pubUrl,
+      ].map(escCSV).join(',')
     })
 
-    const ws = CSV.utils.json_to_sheet(rows)
-    // ปรับความกว้างคอลัมน์ให้อ่านง่าย
-    ws['!cols'] = [
-      { wch: 4 }, { wch: 12 }, { wch: 22 }, { wch: 16 }, { wch: 16 },
-      { wch: 20 }, { wch: 30 }, { wch: 10 }, { wch: 12 }, { wch: 30 },
-      { wch: 30 }, { wch: 12 }, { wch: 40 },
-    ]
-    const wb = CSV.utils.book_new()
-    CSV.utils.book_append_sheet(wb, ws, 'เอกสาร')
-
-    const today = new Date().toISOString().slice(0, 10)
-    CSV.writeFile(wb, `trasap-export-${today}.csv`)
-    showToast('Export Excel เรียบร้อยแล้ว')
+    // BOM (\uFEFF) ทำให้ Excel เปิดภาษาไทยถูกต้อง
+    const csv     = '\uFEFF' + [headers.map(escCSV).join(','), ...rows].join('\r\n')
+    const blob    = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url     = URL.createObjectURL(blob)
+    const link    = document.createElement('a')
+    const today   = new Date().toISOString().slice(0, 10)
+    link.href     = url
+    link.download = `trasap-export-${today}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+    showToast('Export CSV เรียบร้อยแล้ว (เปิดด้วย Excel ได้เลย)')
   }
 
 
@@ -253,16 +265,16 @@ export default function Dashboard({ session }) {
         {/* Header */}
         <div className="page-head" style={{marginBottom:'16px'}}>
           <div>
-            <h2>รายการที่สร้างไว้</h2>
+            <h2>เรื่องที่สร้างไว้</h2>
             <p>รายการเอกสารทั้งหมด {filtered.length}/{docs.length} รายการ</p>
           </div>
           <div style={{ display:'flex', gap:'10px', flexWrap:'wrap' }}>
-            <button className="btn-info"
+            <button className="btn-secondary"
               onClick={handleExportExcel}
               style={{ fontSize:'.88rem' }}>
               📊 Export Excel
             </button>
-            <button className="btn-info"
+            <button className="btn-secondary"
               onClick={() => setShowDocTypes(true)}
               style={{ fontSize:'.88rem' }}>
               ⚙️ ประเภทเอกสาร
@@ -334,7 +346,7 @@ export default function Dashboard({ session }) {
             <p style={{textAlign:'center', padding:'48px', color:'#5C6470'}}>กำลังโหลด...</p>
           ) : filtered.length === 0 ? (
             <p style={{textAlign:'center', padding:'48px', color:'#5C6470'}}>
-              {docs.length === 0 ? 'ยังไม่มีรายการที่สร้างไว้' : 'ไม่พบรายการที่ค้นหา'}
+              {docs.length === 0 ? 'ยังไม่มีเรื่องที่สร้างไว้' : 'ไม่พบรายการที่ค้นหา'}
             </p>
           ) : (
             <table style={{width:'100%', borderCollapse:'collapse', minWidth:'900px'}}>
@@ -343,7 +355,7 @@ export default function Dashboard({ session }) {
                   <th style={{...th, width:'42px', textAlign:'center'}}>#</th>
                   {COLS.map(c => (
                     <th key={c.key} style={th} onClick={() => handleSort(c.key)}>
-                      {c.label}<SortIcon col={c.key} />
+                      <>{c.label}<SortIcon col={c.key} /></>
                     </th>
                   ))}
                   <th style={{...th, cursor:'default'}}>More details</th>
@@ -352,7 +364,6 @@ export default function Dashboard({ session }) {
                   <th style={{...th, cursor:'default', textAlign:'center'}}>Management</th>
                 </tr>
               </thead>
-              </table>
               <tbody>
                 {paginated.map((doc, i) => {
                   const recpCount = doc.document_recipients?.length || 0
@@ -533,7 +544,7 @@ export default function Dashboard({ session }) {
         <div className="modal-overlay" onClick={() => setAckModal(null)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}
             style={{maxWidth:'520px', maxHeight:'85vh', overflowY:'auto'}}>
-            <h3>รายละเอียดการรับทราบ</h3>
+            <h3>รายละเอียดการรับ</h3>
             <p style={{fontSize:'.85rem', color:'#5C6470', marginBottom:'16px'}}>
               เรื่อง: <strong>{ackModal.title}</strong>
             </p>
@@ -556,7 +567,7 @@ export default function Dashboard({ session }) {
                         ? <span style={{color:'#3C5E4A', fontWeight:'600', fontSize:'.78rem'}}>
                             ✓ {fmtDateTime(signed.signed_at)}
                           </span>
-                        : <span style={{color:'#856404', fontSize:'.78rem'}}>⏳ รอรับทราบ</span>
+                        : <span style={{color:'#856404', fontSize:'.78rem'}}>⏳ รอรับ</span>
                       }
                     </div>
                   )
@@ -565,7 +576,7 @@ export default function Dashboard({ session }) {
             )}
 
             {(ackModal.acknowledgments?.length || 0) === 0 ? (
-              <p style={{color:'#5C6470', fontSize:'.88rem'}}>ยังไม่มีผู้รับทราบ</p>
+              <p style={{color:'#5C6470', fontSize:'.88rem'}}>ยังไม่มีผู้รับ</p>
             ) : ackModal.acknowledgments.map(ack => (
               <div key={ack.id} style={{
                 border:'1px solid #D8D0BC', borderRadius:'8px',
@@ -597,7 +608,7 @@ export default function Dashboard({ session }) {
           <div className="modal-card" onClick={e => e.stopPropagation()} style={{maxWidth:'400px'}}>
             <h3 style={{color:'#B33A3A'}}>⚠️ ยืนยันการลบ</h3>
             <p style={{fontSize:'.9rem', color:'#1B2A4A', margin:'12px 0 6px', lineHeight:'1.6'}}>
-              ต้องการลบรายการ <strong>"{deleteConfirm.title}"</strong> ใช่หรือไม่?
+              ต้องการลบเรื่อง <strong>"{deleteConfirm.title}"</strong> ใช่หรือไม่?
             </p>
             <p style={{fontSize:'.82rem', color:'#5C6470'}}>
               ข้อมูลทั้งหมดรวมถึงลายเซ็นจะถูกลบอย่างถาวร ไม่สามารถกู้คืนได้
