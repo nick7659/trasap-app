@@ -39,6 +39,7 @@ const COLS = [
   { key: 'doc_type',      label: 'Document Type' },
   { key: 'doc_no',        label: 'Document No.' },
   { key: 'dar_no',        label: 'DAR No.' },
+  { key: 'models',        label: 'Models' },
   { key: 'title',         label: 'Document Title' },
   { key: 'revision_no',   label: 'Rev. No.' },
   { key: 'eff_date',      label: 'Eff. Date' },
@@ -59,7 +60,9 @@ export default function Dashboard({ session }) {
   const [deleteConfirm, setDeleteConfirm] = useState(null)
   const [deleting,    setDeleting]    = useState(false)
   const [showDocTypes, setShowDocTypes] = useState(false)
-
+  const [pageSize,    setPageSize]    = useState(10)
+  const [currentPage, setCurrentPage] = useState(1)
+  
   const fetchDocs = useCallback(async () => {
     setFetchError('')
     const { data, error } = await supabase
@@ -98,6 +101,8 @@ export default function Dashboard({ session }) {
         (d.doc_type     || '').toLowerCase().includes(q) ||
         (d.customer     || '').toLowerCase().includes(q) ||
         (d.part_no      || '').toLowerCase().includes(q) ||
+        (d.dar_no       || '').toLowerCase().includes(q) ||
+        (d.models       || '').toLowerCase().includes(q) ||
         (d.description  || '').toLowerCase().includes(q) ||
         (d.document_recipients || []).some(r => r.name.toLowerCase().includes(q))
       )
@@ -111,6 +116,14 @@ export default function Dashboard({ session }) {
     })
     return list
   }, [docs, search, filterType, filterStatus, sortKey, sortDir])
+
+// Pagination
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const safePage   = Math.min(currentPage, totalPages)
+  const paginated  = filtered.slice((safePage - 1) * pageSize, safePage * pageSize)
+
+  // Reset to page 1 when filter/search changes
+  const resetPage = () => setCurrentPage(1)
 
   const handleSort = (key) => {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
@@ -175,11 +188,12 @@ export default function Dashboard({ session }) {
         'ประเภทเอกสาร':        doc.doc_type || '',
         'หมายเลขเอกสาร':       doc.doc_no || '',
         'DAR No.':            doc.dar_no || '',
+        'Models':             doc.models || '',
         'ชื่อเรื่อง/ชิ้นส่วน':   doc.title || '',
         'แก้ไขครั้งที่':        fmtRev(doc.revision_no),
         'Eff. Date':          fmtDate(doc.eff_date),
         'รายละเอียดเพิ่มเติม':  doc.description || '',
-        'รายชื่อผู้ต้องรับทราบ': recpCount > 0 ? `${recipientNames} (${ackCount}/${recpCount})` : `โหมดเปิด (${ackCount} คน)`,
+        'รายชื่อผู้ต้องรับ': recpCount > 0 ? `${recipientNames} (${ackCount}/${recpCount})` : `โหมดเปิด (${ackCount} คน)`,
         'สถานะ':              status.label,
         'ลิงก์':               pubUrl,
       }
@@ -265,7 +279,7 @@ export default function Dashboard({ session }) {
           marginBottom:'16px', alignItems:'center'
         }}>
           <input
-            placeholder="🔍 ค้นหา Document Tirle , Rev."
+            placeholder="🔍 ค้นหา เช่น Document Tirle , Rev. , ผู้รับ"
             value={search} onChange={e => setSearch(e.target.value)}
             style={{
               flex:'1', minWidth:'220px', padding:'9px 13px',
@@ -288,7 +302,6 @@ export default function Dashboard({ session }) {
               borderRadius:'7px', fontFamily:'inherit', fontSize:'.85rem',
               background:'#fff', color:'#1B2A4A', minWidth:'150px'
             }}>
-            <option value="">ทุกสถานะ</option>
             <option value="">ทุกสถานะ</option>
             <option value="pending">รอเซ็นรับ</option>
             <option value="partial">รับแล้วบางส่วน</option>
@@ -338,14 +351,14 @@ export default function Dashboard({ session }) {
                   <th style={{...th, cursor:'default', textAlign:'center'}}>Status</th>
                   <th style={{...th, cursor:'default', textAlign:'center'}}>Management</th>
                 </tr>
-              </thead>
               <tbody>
-                {filtered.map((doc, i) => {
+                {paginated.map((doc, i) => {
                   const recpCount = doc.document_recipients?.length || 0
                   const ackCount  = doc.acknowledgments?.length    || 0
                   const status    = STATUS_LABEL[doc.status] || STATUS_LABEL.pending
                   const pubUrl    = `${window.location.origin}/ack/${doc.access_token}`
                   const recipientNames = (doc.document_recipients || []).map(r => r.name).join(', ')
+                  const rowNum    = (safePage - 1) * pageSize + i + 1
 
                   return (
                     <tr key={doc.id}
@@ -364,6 +377,7 @@ export default function Dashboard({ session }) {
                       </td>
                       <td style={{...td, fontWeight:'600', whiteSpace:'nowrap'}}>{doc.doc_no}</td>
                       <td style={{...td, whiteSpace:'nowrap'}}>{doc.dar_no || '—'}</td>
+                      <td style={{...td, maxWidth:'160px'}}>{doc.models || '—'}</td>
                       <td style={{...td, maxWidth:'220px'}}>
                         <div style={{fontWeight:'600', lineHeight:'1.35'}}>{doc.title}</div>
                         {doc.part_no  && <div style={{fontSize:'.74rem', color:'#888'}}>PN: {doc.part_no}</div>}
@@ -424,6 +438,92 @@ export default function Dashboard({ session }) {
             </table>
           )}
         </div>
+
+        {/* Pagination controls */}
+        {!loading && filtered.length > 0 && (
+          <div style={{
+            display:'flex', alignItems:'center', justifyContent:'space-between',
+            flexWrap:'wrap', gap:'12px', marginTop:'14px',
+            color:'rgba(247,243,234,.75)', fontSize:'.85rem'
+          }}>
+            {/* แสดงกี่รายการ */}
+            <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
+              <span>แสดง</span>
+              <select
+                value={pageSize}
+                onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1) }}
+                style={{
+                  padding:'5px 10px', borderRadius:'6px', border:'1.5px solid rgba(247,243,234,.3)',
+                  background:'rgba(255,255,255,.08)', color:'#F7F3EA',
+                  fontFamily:'inherit', fontSize:'.85rem', cursor:'pointer'
+                }}
+              >
+                {[10, 25, 50, 100].map(n => (
+                  <option key={n} value={n} style={{background:'#1B2A4A'}}>{n}</option>
+                ))}
+              </select>
+              <span>รายการ / {filtered.length} รายการทั้งหมด</span>
+            </div>
+
+            {/* ปุ่มเปลี่ยนหน้า */}
+            <div style={{display:'flex', alignItems:'center', gap:'6px'}}>
+              <button
+                onClick={() => setCurrentPage(1)} disabled={safePage === 1}
+                style={{...actionBtn, background:'rgba(255,255,255,.08)', color:'#F7F3EA',
+                  borderColor:'rgba(247,243,234,.3)', opacity: safePage === 1 ? .35 : 1}}>
+                «
+              </button>
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={safePage === 1}
+                style={{...actionBtn, background:'rgba(255,255,255,.08)', color:'#F7F3EA',
+                  borderColor:'rgba(247,243,234,.3)', opacity: safePage === 1 ? .35 : 1}}>
+                ‹
+              </button>
+
+              {/* หน้าที่ */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === totalPages || Math.abs(p - safePage) <= 2)
+                .reduce((acc, p, idx, arr) => {
+                  if (idx > 0 && p - arr[idx - 1] > 1) acc.push('...')
+                  acc.push(p)
+                  return acc
+                }, [])
+                .map((p, idx) => p === '...' ? (
+                  <span key={`ellipsis-${idx}`} style={{color:'rgba(247,243,234,.5)', padding:'0 4px'}}>…</span>
+                ) : (
+                  <button key={p} onClick={() => setCurrentPage(p)}
+                    style={{
+                      ...actionBtn, minWidth:'32px', textAlign:'center',
+                      background: p === safePage ? '#B33A3A' : 'rgba(255,255,255,.08)',
+                      color: p === safePage ? '#fff' : '#F7F3EA',
+                      borderColor: p === safePage ? '#B33A3A' : 'rgba(247,243,234,.3)',
+                      fontWeight: p === safePage ? '700' : '600',
+                    }}>
+                    {p}
+                  </button>
+                ))
+              }
+
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages}
+                style={{...actionBtn, background:'rgba(255,255,255,.08)', color:'#F7F3EA',
+                  borderColor:'rgba(247,243,234,.3)', opacity: safePage === totalPages ? .35 : 1}}>
+                ›
+              </button>
+              <button
+                onClick={() => setCurrentPage(totalPages)} disabled={safePage === totalPages}
+                style={{...actionBtn, background:'rgba(255,255,255,.08)', color:'#F7F3EA',
+                  borderColor:'rgba(247,243,234,.3)', opacity: safePage === totalPages ? .35 : 1}}>
+                »
+              </button>
+            </div>
+
+            {/* หน้าที่ x / y */}
+            <span style={{color:'rgba(247,243,234,.6)'}}>
+              หน้า {safePage} / {totalPages}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Modal: ดูลายเซ็น */}
@@ -454,7 +554,7 @@ export default function Dashboard({ session }) {
                         ? <span style={{color:'#3C5E4A', fontWeight:'600', fontSize:'.78rem'}}>
                             ✓ {fmtDateTime(signed.signed_at)}
                           </span>
-                        : <span style={{color:'#856404', fontSize:'.78rem'}}>⏳ รอรับทราบ</span>
+                        : <span style={{color:'#856404', fontSize:'.78rem'}}>⏳ รอรับ</span>
                       }
                     </div>
                   )
@@ -463,7 +563,7 @@ export default function Dashboard({ session }) {
             )}
 
             {(ackModal.acknowledgments?.length || 0) === 0 ? (
-              <p style={{color:'#5C6470', fontSize:'.88rem'}}>ยังไม่มีผู้รับทราบ</p>
+              <p style={{color:'#5C6470', fontSize:'.88rem'}}>ยังไม่มีผู้รับ</p>
             ) : ackModal.acknowledgments.map(ack => (
               <div key={ack.id} style={{
                 border:'1px solid #D8D0BC', borderRadius:'8px',
@@ -495,7 +595,7 @@ export default function Dashboard({ session }) {
           <div className="modal-card" onClick={e => e.stopPropagation()} style={{maxWidth:'400px'}}>
             <h3 style={{color:'#B33A3A'}}>⚠️ ยืนยันการลบ</h3>
             <p style={{fontSize:'.9rem', color:'#1B2A4A', margin:'12px 0 6px', lineHeight:'1.6'}}>
-              ต้องการลบเรื่อง <strong>"{deleteConfirm.title}"</strong> ใช่หรือไม่?
+              ต้องการลบเรื่อง <strong>"{deleteConfirm.title}"</strong> ใช่หรือไม่ ?
             </p>
             <p style={{fontSize:'.82rem', color:'#5C6470'}}>
               ข้อมูลทั้งหมดรวมถึงลายเซ็นจะถูกลบอย่างถาวร ไม่สามารถกู้คืนได้

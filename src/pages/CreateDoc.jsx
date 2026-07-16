@@ -24,6 +24,7 @@ export default function CreateDoc({ session }) {
   const [darNo,        setDarNo]        = useState('')
   const [title,        setTitle]        = useState('')
   const [partNo,       setPartNo]       = useState('')
+  const [models,       setModels]       = useState('')
   const [customer,     setCustomer]     = useState('')
   const [revisionNo,   setRevisionNo]   = useState('0')
   const [effDate,      setEffDate]      = useState('')
@@ -65,6 +66,7 @@ export default function CreateDoc({ session }) {
         dar_no:       darNo || null,
         title,
         part_no:      partNo  || null,
+        models:       models || null,        
         customer:     customer || null,
         revision_no:  Number(revisionNo),
         revision_date: todayISO(),
@@ -152,6 +154,13 @@ export default function CreateDoc({ session }) {
               <input placeholder="เช่น OTC , AHP"
                 value={customer} onChange={e => setCustomer(e.target.value)} />
             </div>
+          </div>
+          
+          {/* Models */}
+          <div className="field">
+            <label>Models</label>
+            <input placeholder="เช่น Model A, Model B"
+              value={models} onChange={e => setModels(e.target.value)} />
           </div>
 
           {/* แก้ไขครั้งที่ + Eff. Date */}
