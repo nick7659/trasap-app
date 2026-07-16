@@ -62,7 +62,7 @@ export default function Dashboard({ session }) {
   const [showDocTypes, setShowDocTypes] = useState(false)
   const [pageSize,    setPageSize]    = useState(10)
   const [currentPage, setCurrentPage] = useState(1)
-  
+
   const fetchDocs = useCallback(async () => {
     setFetchError('')
     const { data, error } = await supabase
@@ -117,7 +117,7 @@ export default function Dashboard({ session }) {
     return list
   }, [docs, search, filterType, filterStatus, sortKey, sortDir])
 
-// Pagination
+  // Pagination
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
   const safePage   = Math.min(currentPage, totalPages)
   const paginated  = filtered.slice((safePage - 1) * pageSize, safePage * pageSize)
@@ -193,7 +193,7 @@ export default function Dashboard({ session }) {
         'แก้ไขครั้งที่':        fmtRev(doc.revision_no),
         'Eff. Date':          fmtDate(doc.eff_date),
         'รายละเอียดเพิ่มเติม':  doc.description || '',
-        'รายชื่อผู้ต้องรับ': recpCount > 0 ? `${recipientNames} (${ackCount}/${recpCount})` : `โหมดเปิด (${ackCount} คน)`,
+        'รายชื่อผู้ต้องรับทราบ': recpCount > 0 ? `${recipientNames} (${ackCount}/${recpCount})` : `โหมดเปิด (${ackCount} คน)`,
         'สถานะ':              status.label,
         'ลิงก์':               pubUrl,
       }
@@ -203,8 +203,8 @@ export default function Dashboard({ session }) {
     // ปรับความกว้างคอลัมน์ให้อ่านง่าย
     ws['!cols'] = [
       { wch: 4 }, { wch: 12 }, { wch: 22 }, { wch: 16 }, { wch: 16 },
-      { wch: 30 }, { wch: 10 }, { wch: 12 }, { wch: 30 }, { wch: 30 },
-      { wch: 12 }, { wch: 40 },
+      { wch: 20 }, { wch: 30 }, { wch: 10 }, { wch: 12 }, { wch: 30 },
+      { wch: 30 }, { wch: 12 }, { wch: 40 },
     ]
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'เอกสาร')
@@ -260,15 +260,15 @@ export default function Dashboard({ session }) {
             <button className="btn-info"
               onClick={handleExportExcel}
               style={{ fontSize:'.88rem' }}>
-              📊 Export Excel Files
+              📊 Export Excel
             </button>
             <button className="btn-info"
               onClick={() => setShowDocTypes(true)}
               style={{ fontSize:'.88rem' }}>
-              ⚙️ เพิ่มประเภทเอกสาร
+              ⚙️ ประเภทเอกสาร
             </button>
             <button className="btn-primary" onClick={() => navigate('/create')}>
-              + สร้าง Link รับเอกสาร
+              + สร้างเรื่องใหม่
             </button>
           </div>
         </div>
@@ -280,14 +280,14 @@ export default function Dashboard({ session }) {
         }}>
           <input
             placeholder="🔍 ค้นหา เช่น Document Tirle , Rev. , ผู้รับ"
-            value={search} onChange={e => setSearch(e.target.value)}
+            value={search} onChange={e => { setSearch(e.target.value); resetPage() }}
             style={{
               flex:'1', minWidth:'220px', padding:'9px 13px',
               border:'1.5px solid #D8D0BC', borderRadius:'7px',
               fontFamily:'inherit', fontSize:'.88rem', background:'#fff'
             }}
           />
-          <select value={filterType} onChange={e => setFilterType(e.target.value)}
+          <select value={filterType} onChange={e => { setFilterType(e.target.value); resetPage() }}
             style={{
               padding:'9px 13px', border:'1.5px solid #D8D0BC',
               borderRadius:'7px', fontFamily:'inherit', fontSize:'.85rem',
@@ -296,7 +296,7 @@ export default function Dashboard({ session }) {
             <option value="">ทุกประเภทเอกสาร</option>
             {docTypes.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+          <select value={filterStatus} onChange={e => { setFilterStatus(e.target.value); resetPage() }}
             style={{
               padding:'9px 13px', border:'1.5px solid #D8D0BC',
               borderRadius:'7px', fontFamily:'inherit', fontSize:'.85rem',
@@ -308,7 +308,7 @@ export default function Dashboard({ session }) {
             <option value="completed">รับครบแล้ว</option>
           </select>
           {(search || filterType || filterStatus) && (
-            <button onClick={() => { setSearch(''); setFilterType(''); setFilterStatus('') }}
+            <button onClick={() => { setSearch(''); setFilterType(''); setFilterStatus(''); resetPage() }}
               style={{...actionBtn, color:'#B33A3A', borderColor:'#B33A3A'}}>
               ล้างตัวกรอง ✕
             </button>
@@ -334,7 +334,7 @@ export default function Dashboard({ session }) {
             <p style={{textAlign:'center', padding:'48px', color:'#5C6470'}}>กำลังโหลด...</p>
           ) : filtered.length === 0 ? (
             <p style={{textAlign:'center', padding:'48px', color:'#5C6470'}}>
-              {docs.length === 0 ? 'ยังไม่มีเรื่องที่สร้างไว้' : 'ไม่พบรายการที่ค้นหา'}
+              {docs.length === 0 ? 'ยังไม่มีรายการที่สร้างไว้' : 'ไม่พบรายการที่ค้นหา'}
             </p>
           ) : (
             <table style={{width:'100%', borderCollapse:'collapse', minWidth:'900px'}}>
@@ -366,7 +366,7 @@ export default function Dashboard({ session }) {
                       onMouseEnter={e => e.currentTarget.style.background='#f0ece0'}
                       onMouseLeave={e => e.currentTarget.style.background= i % 2 === 0 ? '#FFFDF8' : '#faf7f0'}
                     >
-                      <td style={{...td, textAlign:'center', color:'#888', fontSize:'.78rem'}}>{i + 1}</td>
+                      <td style={{...td, textAlign:'center', color:'#888', fontSize:'.78rem'}}>{rowNum}</td>
                       <td style={td}>{fmtDate(doc.revision_date)}</td>
                       <td style={td}>
                         <span style={{
@@ -419,17 +419,17 @@ export default function Dashboard({ session }) {
                       </td>
                       <td style={tdAction}>
                         <button style={actionBtn} title="คัดลอกลิงก์"
-                          onClick={() => handleCopyLink(pubUrl)}>🔗 Copy Link</button>
+                          onClick={() => handleCopyLink(pubUrl)}>🔗 ลิงก์</button>
                         <button style={actionBtn} title="เปิดหน้าผู้รับ"
-                          onClick={() => window.open(pubUrl, '_blank')}>👁 View</button>
+                          onClick={() => window.open(pubUrl, '_blank')}>👁 ผู้รับ</button>
                         {ackCount > 0 && (
                           <button style={actionBtn} title="ดูลายเซ็น"
-                            onClick={() => handleViewAcks(doc)}>✍️ เซ็นรับแล้ว ({ackCount})</button>
+                            onClick={() => handleViewAcks(doc)}>✍️ เซ็น ({ackCount})</button>
                         )}
                         <button
                           style={{...actionBtn, color:'#B33A3A', borderColor:'#f5c6c6', marginRight:0}}
                           title="ลบรายการ"
-                          onClick={() => setDeleteConfirm(doc)}>🗑 Delete</button>
+                          onClick={() => setDeleteConfirm(doc)}>🗑 ลบ</button>
                       </td>
                     </tr>
                   )
@@ -531,15 +531,15 @@ export default function Dashboard({ session }) {
         <div className="modal-overlay" onClick={() => setAckModal(null)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}
             style={{maxWidth:'520px', maxHeight:'85vh', overflowY:'auto'}}>
-            <h3>รายละเอียดการผู้เซ็นรับ</h3>
+            <h3>รายละเอียดการรับทราบ</h3>
             <p style={{fontSize:'.85rem', color:'#5C6470', marginBottom:'16px'}}>
-              Document Type : <strong>{ackModal.title}</strong>
+              เรื่อง: <strong>{ackModal.title}</strong>
             </p>
 
             {ackModal.document_recipients?.length > 0 && (
               <div style={{marginBottom:'16px'}}>
                 <p style={{fontSize:'.8rem', fontWeight:'700', color:'#2E4368', marginBottom:'8px'}}>
-                  ชื่อหรือแผนกที่กำหนดไว้
+                  รายชื่อที่กำหนดไว้
                 </p>
                 {ackModal.document_recipients.map(r => {
                   const signed = ackModal.acknowledgments?.find(a => a.recipient_id === r.id)
@@ -554,7 +554,7 @@ export default function Dashboard({ session }) {
                         ? <span style={{color:'#3C5E4A', fontWeight:'600', fontSize:'.78rem'}}>
                             ✓ {fmtDateTime(signed.signed_at)}
                           </span>
-                        : <span style={{color:'#856404', fontSize:'.78rem'}}>⏳ รอรับ</span>
+                        : <span style={{color:'#856404', fontSize:'.78rem'}}>⏳ รอรับทราบ</span>
                       }
                     </div>
                   )
@@ -563,7 +563,7 @@ export default function Dashboard({ session }) {
             )}
 
             {(ackModal.acknowledgments?.length || 0) === 0 ? (
-              <p style={{color:'#5C6470', fontSize:'.88rem'}}>ยังไม่มีผู้รับ</p>
+              <p style={{color:'#5C6470', fontSize:'.88rem'}}>ยังไม่มีผู้รับทราบ</p>
             ) : ackModal.acknowledgments.map(ack => (
               <div key={ack.id} style={{
                 border:'1px solid #D8D0BC', borderRadius:'8px',
@@ -595,7 +595,7 @@ export default function Dashboard({ session }) {
           <div className="modal-card" onClick={e => e.stopPropagation()} style={{maxWidth:'400px'}}>
             <h3 style={{color:'#B33A3A'}}>⚠️ ยืนยันการลบ</h3>
             <p style={{fontSize:'.9rem', color:'#1B2A4A', margin:'12px 0 6px', lineHeight:'1.6'}}>
-              ต้องการลบเรื่อง <strong>"{deleteConfirm.title}"</strong> ใช่หรือไม่ ?
+              ต้องการลบรายการ <strong>"{deleteConfirm.title}"</strong> ใช่หรือไม่?
             </p>
             <p style={{fontSize:'.82rem', color:'#5C6470'}}>
               ข้อมูลทั้งหมดรวมถึงลายเซ็นจะถูกลบอย่างถาวร ไม่สามารถกู้คืนได้
