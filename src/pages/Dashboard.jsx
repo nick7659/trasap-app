@@ -381,7 +381,6 @@ export default function Dashboard({ session }) {
                     >
                       <td style={{...td, textAlign:'center', color:'#888', fontSize:'.78rem'}}>{rowNum}</td>
                       <td style={{...td, whiteSpace:'nowrap'}}>{doc.dar_no || '—'}</td>
-                      //<td style={td}>{fmtDate(doc.revision_date)}</td>
                       <td style={td}>
                         <span style={{
                           background:'#eae6d8', color:'#2E4368', fontSize:'.72rem',
@@ -395,7 +394,6 @@ export default function Dashboard({ session }) {
                         {doc.part_no  && <div style={{fontSize:'.74rem', color:'#888'}}>PN: {doc.part_no}</div>}
                         {doc.customer && <div style={{fontSize:'.74rem', color:'#888'}}>{doc.customer}</div>}
                       </td>
-                      //<td style={{...td, maxWidth:'160px'}}>{doc.models || '—'}</td>
                       <td style={{...td, textAlign:'center'}}>{fmtRev(doc.revision_no)}</td>
                       <td style={{...td, whiteSpace:'nowrap'}}>{fmtDate(doc.eff_date)}</td>
                       <td style={{...td, maxWidth:'180px'}}>
