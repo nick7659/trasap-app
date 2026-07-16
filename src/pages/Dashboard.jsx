@@ -277,7 +277,7 @@ export default function Dashboard({ session }) {
             <button className="btn-info"
               onClick={() => setShowDocTypes(true)}
               style={{ fontSize:'.88rem' }}>
-              ⚙️ Add Document Tyoe
+              ⚙️ Add Document Type
             </button>
             <button className="btn-primary" onClick={() => navigate('/create')}>
               + สร้าง Link รายการใหม่
@@ -305,7 +305,7 @@ export default function Dashboard({ session }) {
               borderRadius:'7px', fontFamily:'inherit', fontSize:'.85rem',
               background:'#fff', color:'#1B2A4A', minWidth:'180px'
             }}>
-            <option value="">ทุกประเภทเอกสาร</option>
+            <option value="">All Document Type</option>
             {docTypes.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
           <select value={filterStatus} onChange={e => { setFilterStatus(e.target.value); resetPage() }}
@@ -314,7 +314,7 @@ export default function Dashboard({ session }) {
               borderRadius:'7px', fontFamily:'inherit', fontSize:'.85rem',
               background:'#fff', color:'#1B2A4A', minWidth:'150px'
             }}>
-            <option value="">ทุกสถานะ</option>
+            <option value="">All Status</option>
             <option value="pending">รอเซ็นรับ</option>
             <option value="partial">รับแล้วบางส่วน</option>
             <option value="completed">รับครบแล้ว</option>
