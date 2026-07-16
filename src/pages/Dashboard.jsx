@@ -265,22 +265,22 @@ export default function Dashboard({ session }) {
         {/* Header */}
         <div className="page-head" style={{marginBottom:'16px'}}>
           <div>
-            <h2>เรื่องที่สร้างไว้</h2>
+            <h2>รายการที่สร้าง</h2>
             <p>รายการเอกสารทั้งหมด {filtered.length}/{docs.length} รายการ</p>
           </div>
           <div style={{ display:'flex', gap:'10px', flexWrap:'wrap' }}>
             <button className="btn-info"
               onClick={handleExportExcel}
               style={{ fontSize:'.88rem' }}>
-              📊 Export Excel
+              📊 Export CSV
             </button>
             <button className="btn-info"
               onClick={() => setShowDocTypes(true)}
               style={{ fontSize:'.88rem' }}>
-              ⚙️ ประเภทเอกสาร
+              ⚙️ Add Document Tyoe
             </button>
             <button className="btn-primary" onClick={() => navigate('/create')}>
-              + สร้างเรื่องใหม่
+              + สร้าง Link รายการใหม่
             </button>
           </div>
         </div>
@@ -291,7 +291,7 @@ export default function Dashboard({ session }) {
           marginBottom:'16px', alignItems:'center'
         }}>
           <input
-            placeholder="🔍 ค้นหา เช่น Document Tirle , Rev. , รายชื่อผู้รับ"
+            placeholder="🔍 ค้นหา เช่น Dar No. , Document Type , Document No. , Document Title , More Detail , รายชื่อผู้รับ"
             value={search} onChange={e => { setSearch(e.target.value); resetPage() }}
             style={{
               flex:'1', minWidth:'220px', padding:'9px 13px',

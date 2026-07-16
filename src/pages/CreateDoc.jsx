@@ -107,14 +107,21 @@ export default function CreateDoc({ session }) {
       <div className="page">
         <div className="card" style={{maxWidth:'560px', margin:'0 auto'}}>
           <h2 style={{fontSize:'1.2rem', color:'#1B2A4A', marginBottom:'22px'}}>
-            สร้างเรื่องให้รับทราบ
+            สร้าง Link รายการใหม่
           </h2>
 
           {error && <div className="error-box">{error}</div>}
+          
+          {/* DAR No. */}
+          <div className="field">
+            <label>DAR No. <span style={{color:'#B33A3A'}}>*</span></label>
+            <input placeholder="เช่น DAR yy/xxx"
+              value={darNo} onChange={e => setDarNo(e.target.value)} />
+          </div>
 
           {/* ประเภทเอกสาร */}
           <div className="field">
-            <label>ประเภทเอกสาร <span style={{color:'#B33A3A'}}>*</span></label>
+            <label>Document Type <span style={{color:'#B33A3A'}}>*</span></label>
             <select value={docType} onChange={e => setDocType(e.target.value)}>
               <option value="">-- เลือกประเภทเอกสาร --</option>
               {docTypes.map(t => <option key={t} value={t}>{t}</option>)}
@@ -123,50 +130,46 @@ export default function CreateDoc({ session }) {
 
           {/* หมายเลขเอกสาร */}
           <div className="field">
-            <label>หมายเลขเอกสาร <span style={{color:'#B33A3A'}}>*</span></label>
+            <label>Document No. <span style={{color:'#B33A3A'}}>*</span></label>
             <input placeholder="เช่น WI-xx-xxx"
               value={docNo} onChange={e => setDocNo(e.target.value)} />
           </div>
 
-          {/* DAR No. */}
-          <div className="field">
-            <label>DAR No.</label>
-            <input placeholder="เช่น DAR yy/xxx"
-              value={darNo} onChange={e => setDarNo(e.target.value)} />
-          </div>
-
           {/* ชื่อเรื่อง/ชิ้นส่วน */}
           <div className="field">
-            <label>ชื่อเรื่อง / ชิ้นส่วน <span style={{color:'#B33A3A'}}>*</span></label>
+            <label>Document Title <span style={{color:'#B33A3A'}}>*</span></label>
             <input placeholder="เช่น ขั้นตอนการตรวจสอบ"
               value={title} onChange={e => setTitle(e.target.value)} />
           </div>
 
           {/* Models */}
-          <div className="field">
-            <label>Models</label>
-            <input placeholder="เช่น Model xxx"
-              value={models} onChange={e => setModels(e.target.value)} />
-          </div>
+          
             
-          {/* หมายเลขชิ้นงาน + ลูกค้า */}
+          {/* Part No.+ Models */}
           <div className="field-row">
             <div className="field">
-              <label>หมายเลขชิ้นงาน</label>
+              <label>Part No. </label>
               <input placeholder="เช่น Part 001"
                 value={partNo} onChange={e => setPartNo(e.target.value)} />
             </div>
             <div className="field">
-              <label>ลูกค้า</label>
+            <label>Models </label>
+            <input placeholder="เช่น Model xxx"
+              value={models} onChange={e => setModels(e.target.value)} />
+          </div>
+          </div>
+          
+          {/* ลูกค้า */}
+          <div className="field">
+              <label>Customers </label>
               <input placeholder="เช่น OTC , AHP"
                 value={customer} onChange={e => setCustomer(e.target.value)} />
             </div>
-          </div>
 
           {/* แก้ไขครั้งที่ + Eff. Date */}
           <div className="field-row">
             <div className="field">
-              <label>แก้ไขครั้งที่ <span style={{color:'#B33A3A'}}>*</span></label>
+              <label>Rev.<span style={{color:'#B33A3A'}}>*</span></label>
               <input type="number" min="0" placeholder="0"
                 value={revisionNo} onChange={e => setRevisionNo(e.target.value)} />
             </div>
@@ -177,19 +180,18 @@ export default function CreateDoc({ session }) {
             </div>
           </div>
           <p className="field-hint" style={{marginTop:'-8px', marginBottom:'16px'}}>
-            วันที่แก้ไขจะบันทึกเป็นวันที่สร้างเรื่องนี้โดยอัตโนมัติ
           </p>
 
           {/* รายละเอียด */}
           <div className="field">
-            <label>รายละเอียดเพิ่มเติม</label>
+            <label>More Detail</label>
             <textarea placeholder="หมายเหตุหรือรายละเอียดเพิ่มเติม"
               value={description} onChange={e => setDescription(e.target.value)} />
           </div>
 
           {/* รายชื่อผู้รับ */}
           <div className="field">
-            <label>รายชื่อผู้ต้องรับทราบ (ไม่บังคับ)</label>
+            <label>ลงชื่อผู้รับ</label>
             <div style={{display:'flex', gap:'8px'}}>
               <input
                 placeholder="พิมพ์ชื่อและแผนกแล้วกด + เพิ่ม เช่น HR (K.xxxx)"
@@ -202,7 +204,6 @@ export default function CreateDoc({ session }) {
                 style={{padding:'0 16px', flexShrink:0}}>+ เพิ่ม</button>
             </div>
             <p className="field-hint">
-              ถ้าไม่ใส่ชื่อ → ลิงก์เปิดให้ใครก็เซ็นได้ (โหมดเปิด)
             </p>
 
             {/* แสดง chip ชื่อที่เพิ่มแล้ว */}
@@ -228,7 +229,7 @@ export default function CreateDoc({ session }) {
           <div style={{display:'flex', justifyContent:'flex-end', gap:'10px', marginTop:'22px'}}>
             <button className="btn-secondary" onClick={() => navigate('/dashboard')}>ยกเลิก</button>
             <button className="btn-primary" onClick={handleSubmit} disabled={loading}>
-              {loading ? 'กำลังสร้าง...' : 'สร้างเรื่องและสร้างลิงก์'}
+              {loading ? 'กำลังสร้าง...' : 'สร้าง Link รายการ'}
             </button>
           </div>
         </div>
