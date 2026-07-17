@@ -8,9 +8,10 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 function fmtDate(d) {
   if (!d) return '—'
-  return new Date(d + 'T00:00:00').toLocaleDateString('th-TH', {
-    day:'numeric', month:'long', year:'numeric'
-  })
+  const dt = new Date(d + 'T00:00:00')
+  const day = String(dt.getDate()).padStart(2, '0')
+  const mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][dt.getMonth()]
+  return `${day} ${mon} ${dt.getFullYear()}`
 }
 function fmtRev(n) {
   if (n === null || n === undefined || n === '') return '—'
@@ -177,28 +178,32 @@ export default function AckPage() {
         </div>
 
         {/* หัวเรื่อง */}
-        <h1 style={{fontSize:'1.4rem', color:'#1B2A4A', marginBottom:'14px', lineHeight:1.4}}>
+        <h1 style={{fontSize:'.95rem', color:'#1B2A4A', marginBottom:'14px', lineHeight:1.5}}>
           {doc.title}
         </h1>
 
-        {/* ตารางข้อมูลเอกสาร */}
+        {/* ข้อมูลเอกสาร — แบบรายการเรียงบรรทัด */}
         <div style={{
-          display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px 24px',
           background:'#f4f1ea', border:'1px solid #D8D0BC',
           borderRadius:'8px', padding:'14px 16px', marginBottom:'16px'
         }}>
           {[
-            ['Document No.', doc.doc_no],
-            ['DAR No.', doc.dar_no || 'N/A'],
-            ['Document Type', doc.doc_type],
-            ['Customer', doc.customer || 'N/A'],
-            ['Part No.', doc.part_no || 'N/A'],
-            ['Rev.', fmtRev(doc.revision_no)],
-            ['Create Date', fmtDate(doc.revision_date)],
-            ['Eff. Date', fmtDate(doc.eff_date)],
+            ['DAR No.',        doc.dar_no       || '-'],
+            ['Document Type',  doc.doc_type     || '-'],
+            ['Document No.',   doc.doc_no       || '-'],
+            ['Document Title', doc.title        || '-'],
+            ['Part No.',       doc.part_no      || '-'],
+            ['Models',         doc.models       || '-'],
+            ['Customer',       doc.customer     || '-'],
+            ['Rev.',           fmtRev(doc.revision_no)],
+            ['Eff. Date',      fmtDate(doc.eff_date)],
+            ['Create Date',    fmtDate(doc.revision_date)],
           ].map(([lbl, val]) => (
-            <div key={lbl} style={{fontSize:'.83rem'}}>
-              <span style={{color:'#5C6470'}}>{lbl}: </span>
+            <div key={lbl} style={{
+              display:'flex', gap:'8px', fontSize:'.83rem',
+              padding:'3px 0', borderBottom:'1px solid #e8e2d4'
+            }}>
+              <span style={{color:'#5C6470', minWidth:'120px', flexShrink:0}}>{lbl} :</span>
               <span style={{color:'#1B2A4A', fontWeight:'600'}}>{val}</span>
             </div>
           ))}
