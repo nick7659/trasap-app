@@ -370,7 +370,7 @@ export default function Dashboard({ session }) {
                   const ackCount  = doc.acknowledgments?.length    || 0
                   const status    = STATUS_LABEL[doc.status] || STATUS_LABEL.pending
                   const pubUrl    = `${window.location.origin}/ack/${doc.access_token}`
-                  const recipientNames = (doc.document_recipients || []).map(r => r.name).join(', ')
+                  const recipients = doc.document_recipients || []
                   const rowNum    = (safePage - 1) * pageSize + i + 1
 
                   return (
@@ -406,15 +406,22 @@ export default function Dashboard({ session }) {
                           : <span style={{color:'#bbb'}}>—</span>
                         }
                       </td>
-                      <td style={{...td, maxWidth:'160px'}}>
+                      <td style={{...td, maxWidth:'200px'}}>
                         {recpCount > 0 ? (
                           <div>
-                            <div style={{fontSize:'.78rem', color:'#3C5E4A', fontWeight:'600', marginBottom:'2px'}}>
+                            <div style={{fontSize:'.78rem', color:'#3C5E4A', fontWeight:'600', marginBottom:'4px'}}>
                               {ackCount}/{recpCount} คน
                             </div>
-                            <div style={{fontSize:'.75rem', color:'#5C6470', lineHeight:'1.5'}}>
-                              {recipientNames}
-                            </div>
+                            <ol style={{margin:0, padding:'0 0 0 16px', fontSize:'.75rem', color:'#5C6470', lineHeight:'1.8'}}>
+                              {recipients.map(r => {
+                                const signed = (doc.acknowledgments || []).some(a => a.recipient_id === r.id)
+                                return (
+                                  <li key={r.id} style={{color: signed ? '#3C5E4A' : '#5C6470'}}>
+                                    {signed ? '✓ ' : ''}{r.name}
+                                  </li>
+                                )
+                              })}
+                            </ol>
                           </div>
                         ) : (
                           <span style={{fontSize:'.78rem', color:'#888'}}>
