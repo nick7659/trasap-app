@@ -61,6 +61,13 @@ button { font-family: var(--font); cursor: pointer; border: none; border-radius:
   font-size: .85rem; padding: 8px 16px;
 }
 .btn-ghost:hover { border-color: rgba(247,243,234,.7); }
+.btn-info {
+  background: #2E4368; color: var(--paper-white);
+  font-weight: 600; font-size: .95rem; padding: 11px 22px;
+  transition: background .15s;
+}
+.btn-info:hover { background: #1B2A4A; }
+.btn-info:disabled { background: #c9bfae; color: #8a8270; cursor: not-allowed; }
 .btn-danger {
   background: transparent; color: var(--seal);
   border: 1.5px solid var(--seal);

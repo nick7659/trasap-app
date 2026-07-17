@@ -391,9 +391,9 @@ export default function Dashboard({ session }) {
                       <td style={{...td, fontWeight:'600', whiteSpace:'nowrap'}}>{doc.doc_no}</td>
                       <td style={{...td, maxWidth:'220px'}}>
                         <div style={{fontWeight:'600', lineHeight:'1.35'}}>{doc.title}</div>
-                        {doc.part_no  && <div style={{fontSize:'.74rem', color:'#888'}}>Part No. : {doc.part_no}</div>}
-                        {doc.models  && <div style={{fontSize:'.74rem', color:'#888'}}>Models : {doc.models}</div>}
-                        {doc.customer && <div style={{fontSize:'.74rem', color:'#888'}}>Customer : {doc.customer}</div>}
+                        <div style={{fontSize:'.74rem', color:'#888'}}>Part No. : {doc.part_no || '-'}</div>
+                        <div style={{fontSize:'.74rem', color:'#888'}}>Models : {doc.models || '-'}</div>
+                        <div style={{fontSize:'.74rem', color:'#888'}}>Customer : {doc.customer || '-'}</div>
                       </td>
                       <td style={{...td, textAlign:'center'}}>{fmtRev(doc.revision_no)}</td>
                       <td style={{...td, whiteSpace:'nowrap'}}>{fmtDate(doc.eff_date)}</td>
