@@ -272,15 +272,15 @@ export default function Dashboard({ session }) {
             <button className="btn-info"
               onClick={handleExportExcel}
               style={{ fontSize:'.88rem' }}>
-              📊 Export CSV
+              📊 Export Excel Files
             </button>
             <button className="btn-info"
               onClick={() => setShowDocTypes(true)}
               style={{ fontSize:'.88rem' }}>
-              ⚙️ Add Document Type
+              ⚙️ เพิ่มประเภทเอกสาร
             </button>
             <button className="btn-primary" onClick={() => navigate('/create')}>
-              + สร้าง Link รายการใหม่
+              + สร้าง Link รับเอกสาร
             </button>
           </div>
         </div>
@@ -391,8 +391,9 @@ export default function Dashboard({ session }) {
                       <td style={{...td, fontWeight:'600', whiteSpace:'nowrap'}}>{doc.doc_no}</td>
                       <td style={{...td, maxWidth:'220px'}}>
                         <div style={{fontWeight:'600', lineHeight:'1.35'}}>{doc.title}</div>
-                        {doc.part_no  && <div style={{fontSize:'.74rem', color:'#888'}}>PN: {doc.part_no}</div>}
-                        {doc.customer && <div style={{fontSize:'.74rem', color:'#888'}}>{doc.customer}</div>}
+                        {doc.part_no  && <div style={{fontSize:'.74rem', color:'#888'}}>Part No. : {doc.part_no}</div>}
+                        {doc.models  && <div style={{fontSize:'.74rem', color:'#888'}}>Models : {doc.models}</div>}
+                        {doc.customer && <div style={{fontSize:'.74rem', color:'#888'}}>Customer : {doc.customer}</div>}
                       </td>
                       <td style={{...td, textAlign:'center'}}>{fmtRev(doc.revision_no)}</td>
                       <td style={{...td, whiteSpace:'nowrap'}}>{fmtDate(doc.eff_date)}</td>
