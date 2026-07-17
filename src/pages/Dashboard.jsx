@@ -412,11 +412,18 @@ export default function Dashboard({ session }) {
                             <div style={{fontSize:'.78rem', color:'#3C5E4A', fontWeight:'600', marginBottom:'4px'}}>
                               {ackCount}/{recpCount} คน
                             </div>
-                            <ol style={{margin:0, padding:'0 0 0 16px', fontSize:'.75rem', color:'#5C6470', lineHeight:'1.8'}}>
+                            <ol style={{margin:0, padding:'0 0 0 16px', fontSize:'.75rem', lineHeight:'1.8'}}>
                               {recipients.map(r => {
                                 const signed = (doc.acknowledgments || []).some(a => a.recipient_id === r.id)
                                 return (
-                                  <li key={r.id} style={{color: signed ? '#3C5E4A' : '#5C6470'}}>
+                                  <li key={r.id} style={{
+                                    color:       signed ? '#0f5132' : '#B33A3A',
+                                    fontWeight:  signed ? '400'     : '700',
+                                    background:  signed ? '#d1e7dd' : 'transparent',
+                                    borderRadius:'3px',
+                                    padding:     signed ? '0 4px'   : '0',
+                                    marginBottom:'1px',
+                                  }}>
                                     {signed ? '✓ ' : ''}{r.name}
                                   </li>
                                 )
