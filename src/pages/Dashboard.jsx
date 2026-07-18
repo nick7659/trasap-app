@@ -379,7 +379,7 @@ export default function Dashboard({ session }) {
                       onMouseLeave={e => e.currentTarget.style.background= i % 2 === 0 ? '#FFFDF8' : '#faf7f0'}
                     >
                       <td style={{...td, textAlign:'center', color:'#888', fontSize:'.78rem'}}>{rowNum}</td>
-                      <td style={{...td, whiteSpace:'nowrap'}}>{doc.dar_no || '—'}</td>
+                      <td style={{...td, fontWeight:'600', whiteSpace:'nowrap'}}>{doc.dar_no || '—'}</td>
                       <td style={td}>
                         <span style={{
                           background:'#eae6d8', color:'#2E4368', fontSize:'.72rem',
@@ -396,7 +396,7 @@ export default function Dashboard({ session }) {
                         {doc.description && (
                           <div title={doc.description} style={{
                             fontSize:'.74rem', color:'#5C6470', marginTop:'3px',
-                            display:'-webkit-box', WebkitLineClamp:2,
+                            display:'-webkit-box', WebkitLineClamp:10,
                             WebkitBoxOrient:'vertical', overflow:'hidden', lineHeight:'1.5'
                           }}>More Detail : {doc.description}</div>
                         )}
