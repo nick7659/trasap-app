@@ -118,7 +118,7 @@ export default function AckPage() {
       } else {
         const msg = {
           invalid_token:    'ลิงก์ไม่ถูกต้องหรือหมดอายุ',
-          already_signed:   'ชื่อนี้รับทราบไปแล้ว',
+          already_signed:   'ชื่อนี้เซ็นรับเอกสารไปแล้ว',
           invalid_recipient:'ไม่พบชื่อในรายการ',
           upload_failed:    'อัปโหลดลายเซ็นไม่สำเร็จ กรุณาลองใหม่',
           save_failed:      'บันทึกไม่สำเร็จ กรุณาลองใหม่',
@@ -236,7 +236,7 @@ export default function AckPage() {
                 <option value="">-- เลือกชื่อ --</option>
                 {doc.recipients?.map(r => (
                   <option key={r.id} value={r.id}>
-                    {r.name} {r.signed ? '(รับทราบแล้ว)' : ''}
+                    {r.name} {r.signed ? '(เซ็นรับแล้ว)' : ''}
                   </option>
                 ))}
               </select>
@@ -314,8 +314,8 @@ export default function AckPage() {
             {/* ชื่อ-นามสกุล (โหมดเปิดเท่านั้น) */}
             {!lockedRecipient && (
               <div className="field">
-                <label>ชื่อ-นามสกุลผู้รับทราบ</label>
-                <input placeholder="พิมพ์ชื่อ-นามสกุล"
+                <label>ชื่อ-แผนก ผู้รับ</label>
+                <input placeholder="พิมพ์ชื่อ-แผนก"
                   value={signerName} onChange={e => setSignerName(e.target.value)} />
               </div>
             )}
@@ -358,21 +358,21 @@ export default function AckPage() {
                 fontWeight:'700', fontSize:'1.1rem',
                 padding:'8px 20px', borderRadius:'6px',
                 transform:'rotate(-8deg)', letterSpacing:'.05em'
-              }}>รับทราบแล้ว</div>
+              }}>เซ็นรับแล้ว</div>
             </div>
 
             <div style={{
               background:'#d1e7dd', borderRadius:'8px', padding:'16px 18px',
               color:'#0f5132', fontWeight:'600', marginBottom:'16px'
             }}>
-              ✓ บันทึกการรับทราบเรียบร้อยแล้ว
+              ✓ บันทึกการเซ็นรับเรียบร้อยแล้ว
             </div>
 
             <div style={{
               background:'#f4f1ea', borderRadius:'8px', padding:'16px 18px',
               fontSize:'.88rem', color:'#2E4368', lineHeight:'1.9'
             }}>
-              <strong style={{color:'#1B2A4A'}}>ชื่อผู้รับทราบ:</strong> {signerName}<br/>
+              <strong style={{color:'#1B2A4A'}}>ชื่อผู้รับ:</strong> {signerName}<br/>
               <strong style={{color:'#1B2A4A'}}>วันเวลา:</strong>{' '}
               {new Date().toLocaleString('th-TH', {dateStyle:'medium', timeStyle:'short'})}
             </div>
