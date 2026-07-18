@@ -358,7 +358,6 @@ export default function Dashboard({ session }) {
                       <>{c.label}<SortIcon col={c.key} /></>
                     </th>
                   ))}
-                  <th style={{...th, cursor:'default'}}>More details</th>
                   <th style={{...th, cursor:'default'}}>รายชื่อผู้รับ</th>
                   <th style={{...th, cursor:'default', textAlign:'center'}}>Status</th>
                   <th style={{...th, cursor:'default', textAlign:'center'}}>Management</th>
@@ -389,23 +388,21 @@ export default function Dashboard({ session }) {
                         }}>{doc.doc_type}</span>
                       </td>
                       <td style={{...td, fontWeight:'600', whiteSpace:'nowrap'}}>{doc.doc_no}</td>
-                      <td style={{...td, maxWidth:'220px'}}>
+                      <td style={{...td, maxWidth:'260px'}}>
                         <div style={{fontWeight:'600', lineHeight:'1.35'}}>{doc.title}</div>
                         <div style={{fontSize:'.74rem', color:'#888'}}>Part No. : {doc.part_no || '-'}</div>
                         <div style={{fontSize:'.74rem', color:'#888'}}>Models : {doc.models || '-'}</div>
                         <div style={{fontSize:'.74rem', color:'#888'}}>Customer : {doc.customer || '-'}</div>
+                        {doc.description && (
+                          <div title={doc.description} style={{
+                            fontSize:'.74rem', color:'#5C6470', marginTop:'3px',
+                            display:'-webkit-box', WebkitLineClamp:2,
+                            WebkitBoxOrient:'vertical', overflow:'hidden', lineHeight:'1.5'
+                          }}>More Detail : {doc.description}</div>
+                        )}
                       </td>
                       <td style={{...td, textAlign:'center'}}>{fmtRev(doc.revision_no)}</td>
                       <td style={{...td, whiteSpace:'nowrap'}}>{fmtDate(doc.eff_date)}</td>
-                      <td style={{...td, maxWidth:'180px'}}>
-                        {doc.description
-                          ? <span title={doc.description} style={{
-                              display:'-webkit-box', WebkitLineClamp:2,
-                              WebkitBoxOrient:'vertical', overflow:'hidden', fontSize:'.8rem'
-                            }}>{doc.description}</span>
-                          : <span style={{color:'#bbb'}}>—</span>
-                        }
-                      </td>
                       <td style={{...td, maxWidth:'200px'}}>
                         {recpCount > 0 ? (
                           <div>
