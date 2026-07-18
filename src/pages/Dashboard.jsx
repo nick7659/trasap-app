@@ -557,15 +557,15 @@ export default function Dashboard({ session }) {
         <div className="modal-overlay" onClick={() => setAckModal(null)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}
             style={{maxWidth:'520px', maxHeight:'85vh', overflowY:'auto'}}>
-            <h3>รายละเอียดการรับ</h3>
+            <h3>รายละเอียดการเซ็นรับเอกสาร</h3>
             <p style={{fontSize:'.85rem', color:'#5C6470', marginBottom:'16px'}}>
-              เรื่อง: <strong>{ackModal.title}</strong>
+              เรื่อง : <strong>{ackModal.title}</strong>
             </p>
 
             {ackModal.document_recipients?.length > 0 && (
               <div style={{marginBottom:'16px'}}>
                 <p style={{fontSize:'.8rem', fontWeight:'700', color:'#2E4368', marginBottom:'8px'}}>
-                  รายชื่อที่กำหนดไว้
+                  รายชื่อผู้รับเอกสารที่กำหนดไว้
                 </p>
                 {ackModal.document_recipients.map(r => {
                   const signed = ackModal.acknowledgments?.find(a => a.recipient_id === r.id)
@@ -578,9 +578,9 @@ export default function Dashboard({ session }) {
                       <span>{r.name}</span>
                       {signed
                         ? <span style={{color:'#3C5E4A', fontWeight:'600', fontSize:'.78rem'}}>
-                            ✓ {fmtDateTime(signed.signed_at)}
+                            ✓ เซ็นรับแล้ว {fmtDateTime(signed.signed_at)}
                           </span>
-                        : <span style={{color:'#856404', fontSize:'.78rem'}}>⏳ รอรับ</span>
+                        : <span style={{color:'#856404', fontSize:'.78rem'}}>⏳ รอเซ็นรับเอกสาร</span>
                       }
                     </div>
                   )
@@ -589,7 +589,7 @@ export default function Dashboard({ session }) {
             )}
 
             {(ackModal.acknowledgments?.length || 0) === 0 ? (
-              <p style={{color:'#5C6470', fontSize:'.88rem'}}>ยังไม่มีผู้รับ</p>
+              <p style={{color:'#5C6470', fontSize:'.88rem'}}>ยังไม่มีผู้เซ็นรับเอกสาร</p>
             ) : ackModal.acknowledgments.map(ack => (
               <div key={ack.id} style={{
                 border:'1px solid #D8D0BC', borderRadius:'8px',
