@@ -177,11 +177,6 @@ export default function AckPage() {
           </span>
         </div>
 
-        {/* หัวเรื่อง */}
-        <h1 style={{fontSize:'.95rem', color:'#1B2A4A', marginBottom:'14px', lineHeight:1.5}}>
-          {doc.title}
-        </h1>
-
         {/* ข้อมูลเอกสาร — แบบรายการเรียงบรรทัด */}
         <div style={{
           background:'#f4f1ea', border:'1px solid #D8D0BC',
@@ -195,6 +190,7 @@ export default function AckPage() {
             ['Part No.',       doc.part_no      || '-'],
             ['Models',         doc.models       || '-'],
             ['Customer',       doc.customer     || '-'],
+            ['More Detail', doc.description        || '-'],
             ['Rev.',           fmtRev(doc.revision_no)],
             ['Eff. Date',      fmtDate(doc.eff_date)],
             ['Create Date',    fmtDate(doc.revision_date)],
@@ -208,14 +204,6 @@ export default function AckPage() {
             </div>
           ))}
         </div>
-
-        {/* รายละเอียด */}
-        {doc.description && (
-          <p style={{fontSize:'.94rem', lineHeight:'1.8', color:'#3c3a33',
-            whiteSpace:'pre-wrap', marginBottom:'20px'}}>
-            {doc.description}
-          </p>
-        )}
 
         {/* ===== แถบเส้นกั้น ===== */}
         <div style={{position:'relative', textAlign:'center',
