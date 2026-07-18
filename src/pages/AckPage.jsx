@@ -258,7 +258,7 @@ export default function AckPage() {
               background:'#d1e7dd', borderRadius:'8px', padding:'14px 16px',
               marginBottom:'16px', color:'#0f5132', fontWeight:'600', fontSize:'.9rem'
             }}>
-              ✓ ท่านได้รับทราบเอกสารนี้แล้ว
+              ✓ คุณได้ทำการอ่านและเซ็นรับเอกสารนี้แล้ว
             </div>
             {existingAck && (
               <div style={{fontSize:'.85rem', color:'#5C6470', lineHeight:'1.8', marginBottom:'14px'}}>
